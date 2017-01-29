@@ -40,7 +40,7 @@ def pp_calc(aim, speed, b, misses, c100, c50, used_mods = mods() ,combo = 0xFFFF
 	circles = b.num_circles
 
 	if c100 > b.num_objects or c50 > b.num_objects or misses > b.num_objects:
-		print "Invalid accuracy number"
+		print("Invalid accuracy number")
 		return res
 
 	if c300 == 0xFFFF:
@@ -49,15 +49,15 @@ def pp_calc(aim, speed, b, misses, c100, c50, used_mods = mods() ,combo = 0xFFFF
 	if combo == 0xFFFF:
 		combo = b.max_combo
 	elif combo == 0:
-		print "Invalid combo count"
+		print("Invalid combo count")
 		return res
 
 	total_hits = c300 + c100 + c50 + misses
 	if total_hits != b.num_objects:
-		print "warning hits != objects"
+		print("warning hits != objects")
 
 	if score_version != 1 and score_version != 2:
-		print "Score version not found"
+		print("Score version not found")
 		return res
 
 	acc = acc_calc(c300,c100,c50,misses)
@@ -145,7 +145,7 @@ def pp_calc(aim, speed, b, misses, c100, c50, used_mods = mods() ,combo = 0xFFFF
 	if used_mods.so:
 		final_multiplier *= 0.95
 	res.pp = math.pow(math.pow(aim_value,1.1) + math.pow(speed_value,1.1) + math.pow(acc_value, 1.1), 1.0 / 1.1) * final_multiplier
-	return res;
+	return res
 
 def pp_calc_acc(aim, speed, b, acc_percent, used_mods = mods(), combo = 0xFFFF, misses = 0,score_version = 1):
 	misses = min(b.num_objects,misses)

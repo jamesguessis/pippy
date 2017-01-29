@@ -1,19 +1,20 @@
 import re
 import json
-import urllib2
+import requests
 import sys
 def bm_s(bm,key):
 	url = 'https://osu.ppy.sh/api/get_beatmaps?k='+key+'&'+bm
-	jsonurl = urllib2.urlopen(url)
+	jsonurl = requests.get(url)
 	#enc = jsonurl.headers.get_content_charset()
-	jstring = jsonurl.read().strip("[]")
+	text = jsonurl.content.decode()
+	jstring = text.strip("[]")
 	new = jstring.split("},")
 	if len(new) > 1:
 		jstring = new[0]+"}"
 	json_string = json.loads(jstring)
 	b_id = "b="+json_string['beatmap_id']
 	return b_id
-def main(url,key):
+def main(url, key):
 	try:
 		p = re.compile(".*osu.ppy.sh/s/|.*osu.ppy.sh/b/|\?.*")
 		a = p.subn('',url)
@@ -25,5 +26,5 @@ def main(url,key):
 			return url
 		else:
 			raise Exception('invalid url')
-	except:
-		return
+	except Exception as ex:
+		raise
