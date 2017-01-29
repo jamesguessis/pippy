@@ -34,7 +34,7 @@ class DiffObj:
         self.calculate_strain(prev, 1)
 
     def calculate_strain(self, prev, dtype):
-        if (prev == None):
+        if prev == None:
             return
         res = 0
         time_elapsed = int(self.ho.time) - int(prev.ho.time)

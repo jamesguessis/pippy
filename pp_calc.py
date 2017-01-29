@@ -1,5 +1,5 @@
 import math
-import diff_calc
+
 
 class Mods:
     def __init__(self):
@@ -39,6 +39,8 @@ class Mods:
         return string
 
     def from_str(self, mods):
+        if not mods:
+            return
         if "NF" in mods:
             self.nf = True
         if "EZ" in mods:
@@ -210,7 +212,7 @@ def calculate_pp_by_acc(aim, speed, b, acc_percent, used_mods=Mods(), combo=6553
 
     if c100 > b.num_objects - misses:
         c100 = 0
-        c50 = round(-6.0 * ((acc_percent * 0.01 - 1.0) * b.num_objects + misses) * 0.2);
+        c50 = round(-6.0 * ((acc_percent * 0.01 - 1.0) * b.num_objects + misses) * 0.2)
 
         c50 = min(max300, c50)
     else:

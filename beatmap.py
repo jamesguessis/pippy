@@ -200,23 +200,22 @@ class Beatmap:
     def parse(self):
         # Begin to parse beatmap
         try:
-            for line in self.data.split('\r\n'):
+            for line in self.data.splitlines():
                 # Gather metadata
                 self.metadata(line)
                 # Gather Difficulty information
                 self.difficulty(line)
-                # print "AR: "+str(self.ar)
                 # Section for timing points
-
+                if "Mode: 1" in line or "Mode: 2" in line or "Mode: 3" in line:
+                    self.valid = False
+                    break
                 if "[HitObjects]" in line:
                     self.ho_time = True
                     continue
                 if "osu file format v" in line:
                     self.valid = True
                     continue
-                if "Mode: 1" in line or "Mode: 2" in line or "Mode: 3" in line:
-                    self.valid = False
-                    break
+
                 if "[TimingPoints]" in line:
                     self.tp_sec = True
                     continue
@@ -233,7 +232,6 @@ class Beatmap:
             if not self.valid:
                 print("ERROR: Unsupported gamemode or malformed beatmap")
         except Exception as ex:
-            raise
             print("ERROR: Processing beatmap failed")
             sys.exit(1)
 
@@ -266,9 +264,7 @@ class Beatmap:
             speed *= 0.75
 
         od_multiplier = 1
-        print(mods)
         if mods.hr:
-            print('true')
             od_multiplier *= 1.4
 
         if mods.ez:
@@ -319,4 +315,4 @@ class Beatmap:
 
         for obj in self.hobjects:
             obj.time = float(obj.time) / speed
-            obj.end_time = obj.end_time / speed
+            obj.end_time /= speed

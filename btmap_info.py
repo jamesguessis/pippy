@@ -1,7 +1,7 @@
-import re
 import json
+import re
+
 import requests
-import sys
 
 
 def beatmap_data(bm, key):
@@ -25,7 +25,7 @@ def main(url, key):
         bs = re.compile(".*osu.ppy.sh/|/.*")
         c = bs.subn('', url)
         comp = c[0] + "=" + a[0]
-        if (c[0] == 's' or c[0] == 'b'):
+        if c[0] == 's' or c[0] == 'b':
             url = "http://osu.ppy.sh/osu/" + beatmap_data(comp, key)[2:]
             return url
         else:
