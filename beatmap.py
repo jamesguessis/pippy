@@ -77,51 +77,39 @@ class Beatmap:
         # Gathering Metadata
 
     def get_str(self, line):
-        return line.split(":")[1].split("\n")[0]
+        return line.split(":")[1]
 
     def get_float(self, line):
         return float(self.get_str(line))
 
     def metadata(self, line):
-        print(line)
         if "Title:" in line:
-            self.title = line.split(":")[1].split("\r")[0].split("\n")[0]
-        # print "Title: "+self.title
+            self.title = self.get_str(line)
         elif "Artist:" in line:
-            self.artist = line.split(":")[1].split("\r")[0].split("\n")[0]
-        # print "Artist: "+self.artist
+            self.artist = self.get_str(line)
         elif "Creator:" in line:
-            self.creator = line.split(":")[1].split("\r")[0].split("\n")[0]
-        # print "Mapper: "+self.creator
+            self.creator = self.get_str(line)
         elif "Version:" in line:
-            self.version = line.split(":")[1].split("\r")[0].split("\n")[0]
-            # print "Dfifficulty: "+self.version
+            self.version = self.get_str(line)
 
-    # Gather difficulty -> remember to check for exceptions
+    # Gather difficulty
     def difficulty(self, line):
         if "HPDrainRate:" in line:
-            self.hp = float(line.split(":")[1].split("\n")[0])
-        # print "HP: "+str(self.hp)
+            self.hp = self.get_float(line)
         elif "CircleSize:" in line:
-            self.cs = float(line.split(":")[1].split("\n")[0])
-        # print "CS: "+str(self.cs)
+            self.cs = self.get_float(line)
         elif "OverallDifficulty:" in line:
-            self.od = float(line.split(":")[1].split("\n")[0])
-        # print "OD: "+str(self.od)
+            self.od = self.get_float(line)
         elif "ApproachRate:" in line:
-            self.ar = float(line.split(":")[1].split("\n")[0])
-        # print "AR: "+str(self.ar)
+            self.ar = self.get_float(line)
         elif "SliderMultiplier:" in line:
-            self.sv = float(line.split(":")[1].split("\n")[0])
-        # print "SV: "+str(self.sv)
+            self.sv = self.get_float(line)
         elif "SliderTickRate:" in line:
-            self.tick_rate = float(line.split(":")[1].split("\n")[0])
-            # print "TR: "+str(self.tick_rate)
+            self.tick_rate = self.get_float(line)
 
-    # Parse the tp object
-    def tp_ptr(self, line):
-        temp_tp = line.split("\r")[0].split("\n")[0].split(",")
-
+    # Parse the timing point object
+    def parse_tp(self, line):
+        temp_tp = line.split(",")
         if temp_tp[0]:
             if len(temp_tp) < 3:
                 self.timing_points.append(TimingPoint(temp_tp[0], temp_tp[1], 0))
@@ -130,126 +118,129 @@ class Beatmap:
                 # print timing_points[tp_num].ms_per_beat
 
     # Parse the HitObject. This may take a while
-    def ho_ptr(self, line):
+    def parse_ho(self, line):
         # Start to global stuff. Need to learn more about this
         # Split commas for each line which should be a hit object
-        temp_tp = line.split("\r")[0].split("\n")[0].split(",")
-        # Only if the line is not null do something
-        if temp_tp[0]:
-            # Set variables to send to hit object
-            pos = [temp_tp[0], temp_tp[1]]
-            time = temp_tp[2]
-            h_type = temp_tp[3]
-            end_time = 0
-            slider = 0
-            slider_true = 0
-            if len(line.split("|")) > 1:
-                slider_true = 1
+        temp_tp = line.split(",")
+        if not temp_tp[0]:
+            # If line is empty, we won't process it
+            return
+        # Set variables to send to hit object
+        pos = [temp_tp[0], temp_tp[1]]
+        time = temp_tp[2]
+        h_type = temp_tp[3]
+        end_time = 0
+        slider = 0
+        slider_true = 0
+        if len(line.split("|")) > 1:
+            slider_true = 1
 
-            # Circle type
-            if h_type == "1" or h_type == "5" or (slider_true == 0 and int(h_type) > 12):
-                self.num_circles += 1
-                h_type = 1
-            # Slider type. Need to do some more math on sliders
-            elif h_type == "2" or h_type == "6" or slider_true:
-                # print "Found slider beginning analysis..."
-                self.num_sliders += 1
-                h_type = 2
-                pos_s = []
-                # split into pipeline for slider logic
-                sl_line = line.split("\r")[0].split("\n")[0].split("|")
-                sl_type = sl_line[0][len(sl_line[0]) - 1]
-                sl_line = sl_line[1:]
-                counter = 0
-                # add first slider point
-                pos_s.append(pos)
-                # iterate line for the rest of the slider points
-                for l_pos in sl_line:
-                    pos_s.append([l_pos.split(":")[0], l_pos.split(":")[1].split(",")[0]])
-                    if len(l_pos.split(",")) > 2:
-                        break
-                repeats = float(l_pos.split(",")[1])
-                length = float(l_pos.split(",")[2])
-                # print "Repeats: "+repeats+" Length: "+length+" Points: "
-                # print pos_s
-                time_p = self.timing_points[0]
-                parent = self.timing_points[0]
-                # Get timing point
-                for tp in self.timing_points:
-                    if float(tp.time) > float(time):
-                        break
-                    time_p = tp
-                # Get the parent point
-                for tp in self.timing_points:
-                    if int(tp.inherit) == 1:
-                        parent = tp
-                    if tp == time_p:
-                        break
-                # Begin to calculte the amount of ticks for max combo
-                sv_mult = 1
-                if time_p.inherit == "0" and float(tp.ms_per_beat) < 0:
-                    sv_mult = (-100.0 / float(time_p.ms_per_beat))
-                px_per_beat = self.sv * 100.0 * sv_mult
-                num_beats = (length * repeats) / px_per_beat
-                duration = math.ceil(num_beats * float(parent.ms_per_beat))
-                end_time = float(time) + duration
-                slider = SliderData(sl_type, pos_s, repeats, length)
-                ticks = math.ceil((num_beats - 0.1) / repeats * self.tick_rate)
-                ticks -= 1
-                raw_ticks = ticks
-                ticks *= repeats
-                ticks += repeats + 1
-                self.max_combo += ticks - 1
+        # Circle type
+        if h_type == "1" or h_type == "5" or not slider_true and int(h_type) > 12:
+            self.num_circles += 1
+            h_type = 1
+        # Slider type. Need to do some more math on sliders
+        elif h_type == "2" or h_type == "6" or slider_true:
+            self.num_sliders += 1
+            h_type = 2
+            pos_s = []
+            # split into pipeline for slider logic
+            sl_line = line.split("|")
+            sl_type, *sl_line = sl_line
+            counter = 0
+            # add first slider point
+            pos_s.append(pos)
+            # iterate line for the rest of the slider points
+            for l_pos in sl_line:
+                curve = l_pos.split(":")
+                pos_s.append([curve[0], curve[1].split(",")[0]])
+                if len(l_pos.split(",")) > 2:
+                    break
+            repeats = float(l_pos.split(",")[1])
+            length = float(l_pos.split(",")[2])
+            time_p = None
+            parent = None
+            for tp in self.timing_points:
+                if float(tp.time) > float(time):
+                    break
+                time_p = tp
+            # Get the parent point
+            for tp in self.timing_points:
+                if int(tp.inherit) == 1:
+                    parent = tp
+                if tp == time_p:
+                    break
+            # Begin to calculte the amount of ticks for max combo
+            sv_mult = 1
+            if time_p.inherit == "0" and float(tp.ms_per_beat) < 0:
+                sv_mult = (-100.0 / float(time_p.ms_per_beat))
+            px_per_beat = self.sv * 100.0 * sv_mult
+            num_beats = (length * repeats) / px_per_beat
+            duration = math.ceil(num_beats * float(parent.ms_per_beat))
+            end_time = float(time) + duration
+            slider = SliderData(sl_type, pos_s, repeats, length)
+            ticks = math.ceil((num_beats - 0.1) / repeats * self.tick_rate)
+            ticks -= 1
+            raw_ticks = ticks
+            ticks *= repeats
+            ticks += repeats + 1
+            self.max_combo += ticks - 1
 
-
-
-
-            # Spinner type.
-            elif h_type == "8" or h_type == "12":
-                self.num_spinners += 1
-                h_type = 3
-            else:
-                print("HELP " + h_type)
-                print(temp_tp)
-            self.num_objects += 1
-            self.max_combo += 1
-            self.hobjects.append(HitObject(pos, time, h_type, end_time, slider))
+        # Spinner type.
+        elif h_type == "8" or h_type == "12":
+            self.num_spinners += 1
+            h_type = 3
+        else:
+            print("HELP " + h_type)
+            print(temp_tp)
+        self.num_objects += 1
+        self.max_combo += 1
+        self.hobjects.append(HitObject(pos, time, h_type, end_time, slider))
 
     def parse(self):
         # Begin to parse beatmap
         try:
-            for line in self.data:
+            for line in self.data.split('\r\n'):
                 # Gather metadata
                 self.metadata(line)
                 # Gather Difficulty information
                 self.difficulty(line)
                 # print "AR: "+str(self.ar)
-                if self.ho_time:
-                    self.ho_ptr(line)
-                    self.ho_num += 1
-                if "[HitObjects]" in line:
-                    ho_time = True
-                if "osu file format v" in line:
-                    valid = True
-                if "Mode: 1" in line or "Mode: 2" in line or "Mode: 3" in line:
-                    valid = False
                 # Section for timing points
-                if tp_sec:
-                    self.tp_ptr(line)
-                    self.tp_num += 1
+
+                if "[HitObjects]" in line:
+                    self.ho_time = True
+                    continue
+                if "osu file format v" in line:
+                    self.valid = True
+                    continue
+                if "Mode: 1" in line or "Mode: 2" in line or "Mode: 3" in line:
+                    self.valid = False
+                    break
                 if "[TimingPoints]" in line:
-                    tp_sec = True
-                if tp_sec and (line == "\n" or line == "\r\n"):
-                    tp_sec = False
+                    self.tp_sec = True
+                    continue
+                if self.tp_sec:
+                    self.parse_tp(line)
+                    self.tp_num += 1
+                if self.ho_time:
+                    self.parse_ho(line)
+                    self.ho_num += 1
+                if self.tp_sec:
+                    self.tp_sec = False
             # print "Circles: "+str(self.num_circles)+" Sliders: "+str(self.num_sliders)+" Spinners: "+str(self.num_spinners)
             # print "Max combo: "+str(self.max_combo)
             if not self.valid:
                 print("ERROR: Unsupported gamemode or malformed beatmap")
-                raise ()
         except Exception as ex:
             raise
             print("ERROR: Processing beatmap failed")
             sys.exit(1)
+
+    def timing(self, time):
+        for tp in self.timing_points:
+            if tp.time < time:
+                return tp
 
     def apply_mods(self, mods):
         # Ugly shouldput somewhere else
@@ -263,7 +254,7 @@ class Beatmap:
         ar_ms_step1 = 120.0
         ar_ms_step2 = 150.0
 
-        if mods.map_changing == 0:
+        if mods.map_changing:
             return
 
         speed = 1
@@ -275,8 +266,9 @@ class Beatmap:
             speed *= 0.75
 
         od_multiplier = 1
-
+        print(mods)
         if mods.hr:
+            print('true')
             od_multiplier *= 1.4
 
         if mods.ez:
@@ -317,7 +309,7 @@ class Beatmap:
         self.cs *= cs_multipier
         self.cs = max(0.0, min(10.0, self.cs))
 
-        if mods.speed_changing == 0:
+        if mods.speed_changing:
             return
 
         for tp in self.timing_points:

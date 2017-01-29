@@ -1,9 +1,12 @@
+import io
+
 import diff_calc
 import requests
 import pp_calc
+from pp_calc import Mods
 import sys
 import argparse
-import b_info
+import btmap_info
 import configparser
 from beatmap import Beatmap
 
@@ -25,6 +28,7 @@ parser.add_argument('-sv', help='Score version 1 or 2', metavar="sv",
 parser.add_argument('-mods', help='Mod string eg. HDDT', metavar="mods", default="")
 parser.add_argument('-key', help='Your osu! api key', metavar='KEY',
                     default='')
+
 args = parser.parse_args()
 c100 = int(args.c100)
 c50 = int(args.c50)
@@ -45,24 +49,18 @@ if not args.key:
         raise Exception("Invalid config")
 else:
     key = args.key
-try:
     file_name = args.file
-    if feature:
-        if not key:
-            raise ValueError("Please enter an API key to use this feature.")
-        print("lol")
-        url = b_info.main(file_name, key)
-        print(url)
-        file = requests.get(b_info.main(file_name, key)).raw
-        print(file)
-    else:
-        file = open(file_name)
-except Exception as ex:
-    print("ERROR: " + file_name + " not a valid beatmap or API key is incorrect")
-    sys.exit(1)
-btmap = Beatmap(file)
+if feature:
+    if not key:
+        raise ValueError("Please enter an API key to use this feature.")
+    url = btmap_info.main(file_name, key)
+    data = requests.get(btmap_info.main(file_name, key)).content.decode('utf-8')
+else:
+    data = open(file_name, 'r').readlines()
+btmap = Beatmap(data)
 btmap.parse()
-if combo == 0 or combo > btmap.max_combo:
+
+if not combo or combo > btmap.max_combo:
     combo = btmap.max_combo
 
 
@@ -89,73 +87,50 @@ def mod_str(mod):
     return string
 
 
-class Mods:
-    def __init__(self):
-        self.nomod = 0,
-        self.nf = 0
-        self.ez = 0
-        self.hd = 0
-        self.hr = 0
-        self.dt = 0
-        self.ht = 0
-        self.nc = 0
-        self.fl = 0
-        self.so = 0
-        self.speed_changing = self.dt | self.ht | self.nc
-        self.map_changing = self.hr | self.ez | self.speed_changing
-
-    def update(self):
-        self.speed_changing = self.dt | self.ht | self.nc
-        self.map_changing = self.hr | self.ez | self.speed_changing
+mods = Mods()
 
 
-mod = Mods()
-
-
-def set_mods(mod, mod_name):
-    if m == "NF":
-        mod.nf = 1
-    if m == "EZ":
-        mod.ez = 1
-    if m == "HD":
-        mod.hd = 1
-    if m == "HR":
-        mod.hr = 1
-    if m == "DT":
-        mod.dt = 1
-    if m == "HT":
-        mod.ht = 1
-    if m == "NC":
-        mod.nc = 1
-    if m == "FL":
-        mod.fl = 1
-    if m == "SO":
-        mod.so = 1
+def set_mods(mods_obj, mod_name):
+    if mod_name == "NF":
+        mods_obj.nf = 1
+    if mod_name == "EZ":
+        mods_obj.ez = 1
+    if mod_name == "HD":
+        mods_obj.hd = 1
+    if mod_name == "HR":
+        mods_obj.hr = 1
+    if mod_name == "DT":
+        mods_obj.dt = 1
+    if mod_name == "HT":
+        mods_obj.ht = 1
+    if mod_name == "NC":
+        mods_obj.nc = 1
+    if mod_name == "FL":
+        mods_obj.fl = 1
+    if mod_name == "SO":
+        mods_obj.so = 1
 
 
 if mod_s:
-    mod_s = [mod_s[i:i + 2] for i in range(0, len(mod_s), 2)]
-    print(mod_s)
-    for m in mod_s:
-        set_mods(mod, m)
-        mod.update()
+    mods.from_str(mod_s)
 
-mod_string = mod_str(mod)
-btmap.apply_mods(mod)
-diff = diff_calc.main(map)
+mod_string = mod_str(mods)
+btmap.apply_mods(mods)
+diff = diff_calc.main(btmap)
 if not acc:
-    pp = pp_calc.pp_calc(diff[0], diff[1], diff[3], misses, c100, c50, mod, combo, score_ver)
+    pp = pp_calc.calculate_pp(diff[0], diff[1], diff[3], misses, c100, c50, mods, combo, score_ver)
 else:
-    pp = pp_calc.pp_calc_acc(diff[0], diff[1], diff[3], acc, mod, combo, misses, score_ver)
+    pp = pp_calc.calculate_pp_by_acc(diff[0], diff[1], diff[3], acc, mods, combo, misses, score_ver)
 
-
-title = f"{btmap.artist} - {btmap.title} [{btmap.version}] +{mod_string} ({btmap.creator})"
+title = "{artist} - {title} [{version}] +{mods} ({creator})".format(
+    artist=btmap.artist, title=btmap.title, version=btmap.version,
+    mods=mod_string, creator=btmap.creator
+)
 
 print("Map: " + title)
 print("Stars: " + str(round(diff[2], 2)))
 print("Acc: ", round(pp.acc_percent, 2), "%")
-comb_s = "Combo: " + str(combo) + "/" + str(int(btmap.max_combo))
-if misses:
-    comb_s += " with " + str(misses) + " misses"
-print(comb_s)
-print("Performance: " + str(round(pp.pp, 2)) + "PP")
+combo_s = "Combo : {comb}/{max_comb} with {miss} misses".format(
+    comb=combo, max_comb=btmap.max_combo, miss=misses)
+print(combo_s)
+print("Performance: ", pp.pp, "PP")
