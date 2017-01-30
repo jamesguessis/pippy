@@ -9,7 +9,7 @@ This program is written in python and requires version **3.x** (tested only with
 There are several supported arguments.
 
 * -link `Link to the beatmap (like https://osu.ppy.sh/b/1337)`
-* -acc `Accurace percent`
+* -acc `Accuracy percentage`
 * -c100 `Number of 100's`
 * -c50 `Number of 50's`
 * -m `Number of misses`
