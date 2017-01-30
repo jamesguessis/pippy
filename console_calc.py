@@ -24,8 +24,6 @@ parser.add_argument('-c', help='Max combo', metavar="combo", default=0,
 parser.add_argument('-sv', help='Score version 1 or 2', metavar="sv",
                     dest='score_ver', default=1, type=int)
 parser.add_argument('-mods', help='Mod string eg. HDDT', metavar="mods", default="")
-parser.add_argument('-key', help='Your osu! api key', metavar='KEY',
-                    default=None)
 
 args = parser.parse_args()
 c100 = int(args.c100)
@@ -35,18 +33,9 @@ combo = int(args.combo)
 acc = float(args.acc)
 score_ver = int(args.score_ver)
 mod_s = args.mods
-feature = args.link
+web_beatmap = args.link
 file_name = args.file
-if not args.key:
-    if os.path.isfile('key.cfg'):
-        key = open('key.cfg').read().strip()
-    else:
-        key = None
-else:
-    key = args.key
-if feature:
-    if not key:
-        raise ValueError("Please enter an API key to use this feature.")
+if web_beatmap:
     beatmap_id = file_name.rsplit("/", 1)[1]
     data = requests.get("https://osu.ppy.sh/osu/{}"
                         .format(beatmap_id)).content.decode('utf8')
@@ -73,10 +62,10 @@ title = "{artist} - {title} [{version}] +{mods} ({creator})".format(
     mods=mod_s, creator=btmap.creator
 )
 
-print("Map: ", title)
-print("Stars: ", round(stars, 2))
-print("Acc: ", round(pp.acc_percent, 2), "%")
-combo_s = "Combo : {comb}/{max_comb} with {miss} misses".format(
+print("Map:", title)
+print("Stars:", round(stars, 2))
+print("Acc:", round(pp.acc_percent, 2), "%")
+combo_s = "Combo: {comb}/{max_comb} with {miss} misses".format(
     comb=combo, max_comb=btmap.max_combo, miss=misses)
 print(combo_s)
-print("Performance: ", pp.pp, "PP")
+print("Performance:", pp.pp, "PP")

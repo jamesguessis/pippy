@@ -61,7 +61,8 @@ class Beatmap:
         diff = self.basic_cfg['Difficulty']
 
         # Metadata
-        self.title = metadata['TitleUnicode']
+        # use unicode title if available
+        self.title = metadata.get('TitleUnicode', metadata['Title'])
         self.artist = metadata['Artist']
         self.creator = metadata['Creator']
         self.version = metadata['Version']
