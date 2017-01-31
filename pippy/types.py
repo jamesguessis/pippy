@@ -1,15 +1,18 @@
 class Mods:
-    def __init__(self):
-        self.nomod = False
-        self.nf = False
-        self.ez = False
-        self.hd = False
-        self.hr = False
-        self.dt = False
-        self.ht = False
-        self.nc = False
-        self.fl = False
-        self.so = False
+    def __init__(self, mods_str = ''):
+        if mods_str:
+            self.from_str(mods_str)
+        else:
+            self.nomod = False
+            self.nf = False
+            self.ez = False
+            self.hd = False
+            self.hr = False
+            self.dt = False
+            self.ht = False
+            self.nc = False
+            self.fl = False
+            self.so = False
         self.speed_changing = self.dt | self.ht | self.nc
         self.map_changing = self.hr | self.ez | self.speed_changing
 
@@ -38,6 +41,7 @@ class Mods:
     def from_str(self, mods):
         if not mods:
             return
+        mods = [mods[i:i + 2] for i in range(0, len(mods), 2)]
         if "NF" in mods:
             self.nf = True
         if "EZ" in mods:

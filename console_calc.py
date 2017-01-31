@@ -6,7 +6,7 @@ import requests
 from pippy.parser.beatmap import Beatmap
 from pippy.pp.counter import calculate_pp, Mods, calculate_pp_by_acc
 
-from pippy.diff import counter
+from pippy import diff
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', help='File or url. If url provided use -l flag', )
@@ -26,12 +26,12 @@ parser.add_argument('-sv', help='Score version 1 or 2', metavar="sv",
 parser.add_argument('-mods', help='Mod string eg. HDDT', metavar="mods", default="")
 
 args = parser.parse_args()
-c100 = int(args.c100)
-c50 = int(args.c50)
-misses = int(args.misses)
-combo = int(args.combo)
-acc = float(args.acc)
-score_ver = int(args.score_ver)
+c100 = args.c100
+c50 = args.c50
+misses = args.misses
+combo = args.combo
+acc = args.acc
+score_ver = args.score_ver
 mod_s = args.mods
 web_beatmap = args.link
 file_name = args.file
@@ -43,15 +43,16 @@ else:
     data = open(file_name, 'r').read()
 
 btmap = Beatmap(data)
-btmap.parse()
-
+good = btmap.parse()
+if not good:
+    raise ValueError("Beatmap verify failed. "
+            "Either beatmap is not for osu! standart, or it's malformed")
 if not combo or combo > btmap.max_combo:
     combo = btmap.max_combo
 
-mods = Mods()
-mods.from_str(mod_s)
+mods = Mods(mod_s)
 btmap.apply_mods(mods)
-aim, speed, stars, btmap = counter.main(btmap)
+aim, speed, stars, btmap = diff.counter.main(btmap)
 if not acc:
     pp = calculate_pp(aim, speed, btmap, misses, c100, c50, mods, combo, score_ver)
 else:
