@@ -202,8 +202,8 @@ class Beatmap:
         ar_ms_step1 = 120.0
         ar_ms_step2 = 150.0
 
-        if mods.map_changing:
-            return
+        # if mods.map_changing:
+        #    return
 
         speed = 1
 
@@ -216,7 +216,6 @@ class Beatmap:
         od_multiplier = 1
         if mods.hr:
             od_multiplier *= 1.4
-
         if mods.ez:
             od_multiplier *= 0.5
 
@@ -255,8 +254,8 @@ class Beatmap:
         self.cs *= cs_multipier
         self.cs = max(0.0, min(10.0, self.cs))
 
-        if mods.speed_changing:
-            return
+        # if mods.speed_changing:
+        #    return
 
         for tp in self.timing_points:
             tp.time = float(tp.time) / speed

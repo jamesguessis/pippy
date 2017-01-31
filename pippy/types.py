@@ -1,23 +1,25 @@
 class Mods:
-    def __init__(self, mods_str = ''):
+    __slots__ = ('nomod', 'nf', 'ez', 'hd', 'hr', 'dt', 'ht', 'nc',
+                 'fl', 'so', 'speed_changing', 'map_changing')
+
+    def __init__(self, mods_str=''):
+        self.nomod = False
+        self.nf = False
+        self.ez = False
+        self.hd = False
+        self.hr = False
+        self.dt = False
+        self.ht = False
+        self.nc = False
+        self.fl = False
+        self.so = False
         if mods_str:
             self.from_str(mods_str)
-        else:
-            self.nomod = False
-            self.nf = False
-            self.ez = False
-            self.hd = False
-            self.hr = False
-            self.dt = False
-            self.ht = False
-            self.nc = False
-            self.fl = False
-            self.so = False
         self.speed_changing = self.dt | self.ht | self.nc
         self.map_changing = self.hr | self.ez | self.speed_changing
 
     def __str__(self):
-        string = ""
+        string = ''
         if self.nf:
             string += "NF"
         if self.ez:
