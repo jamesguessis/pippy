@@ -202,8 +202,10 @@ class Beatmap:
         ar_ms_step1 = 120.0
         ar_ms_step2 = 150.0
 
-        # if mods.map_changing:
-        #    return
+        # If no mods affecting beatmap values are used
+        # FL, SO, NF
+        if not mods.map_changing:
+            return
 
         speed = 1
 
@@ -254,8 +256,9 @@ class Beatmap:
         self.cs *= cs_multipier
         self.cs = max(0.0, min(10.0, self.cs))
 
-        # if mods.speed_changing:
-        #    return
+        if not mods.speed_changing:
+            # not speed-modifying
+            return
 
         for tp in self.timing_points:
             tp.time = float(tp.time) / speed
