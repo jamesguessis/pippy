@@ -46,7 +46,7 @@ btmap = Beatmap(data)
 good = btmap.parse()
 if not good:
     raise ValueError("Beatmap verify failed. "
-            "Either beatmap is not for osu! standart, or it's malformed")
+                     "Either beatmap is not for osu! standart, or it's malformed")
 if not combo or combo > btmap.max_combo:
     combo = btmap.max_combo
 
@@ -58,15 +58,24 @@ if not acc:
 else:
     pp = calculate_pp_by_acc(aim, speed, btmap, acc, mods, combo, misses, score_ver)
 
-title = "{artist} - {title} [{version}] +{mods} ({creator})".format(
-    artist=btmap.artist, title=btmap.title, version=btmap.version,
-    mods=mod_s, creator=btmap.creator
-)
+pippy_output = {}
+pippy_output["map"] = btmap.title
+pippy_output["artist"] = btmap.artist
+pippy_output["title"] = btmap.title
+pippy_output["creator"] = btmap.creator
+pippy_output["mods_str"] = mod_s
+pippy_output["ar"] = btmap.ar
+pippy_output["od"] = btmap.od
+pippy_output["hp"] = btmap.hp
+pippy_output["num_circles"] = btmap.num_circles
+pippy_output["num_sliders"] = btmap.num_sliders
+pippy_output["num_spinners"] = btmap.num_spinners
+pippy_output["num_objects"] = btmap.num_objects
+pippy_output["stars"] = round(stars, 2)
+pippy_output["acc"] = "{}".format(round(pp.acc_percent, 2))
+pippy_output["combo"] = combo
+pippy_output["max_combo"] = btmap.max_combo
+pippy_output["misses"] = misses
+pippy_output["pp"] = pp.pp
 
-print("Map:", title)
-print("Stars:", round(stars, 2))
-print("Acc:", round(pp.acc_percent, 2), "%")
-combo_s = "Combo: {comb}/{max_comb} with {miss} misses".format(
-    comb=combo, max_comb=btmap.max_combo, miss=misses)
-print(combo_s)
-print("Performance:", pp.pp, "PP")
+print(pippy_output)
