@@ -1,6 +1,6 @@
 # pippy
-pippy is a performance point(PP) calculator for the osu!
-This program only works on **standard** beatmaps.
+pippy-json is a performance point(PP) calculator for Osu! **Standard** beatmaps.
+The output is json to allow easier use with other programs.
 Most of the code is based on the C++ version located [here](https://github.com/Francesco149/oppai).
 
 # Usage
@@ -21,4 +21,13 @@ Examples:
 python console_calc.py map.osu
 python console_calc.py map.osu -mods HDDTHR
 python console_calc.py -link https://osu.ppy.sh/b/994495 -mods HD -acc 95.61
+```
+
+# Installing pippy with pip
+`pip install osupippy`
+or
+```
+git clone https://github.com/jamesguessis/pippy-json
+cd pippy-json
+pip install .
 ```
