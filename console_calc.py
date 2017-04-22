@@ -3,13 +3,13 @@ import os
 
 import requests
 
-from pippy.parser.beatmap import Beatmap
-from pippy.pp.counter import calculate_pp, Mods, calculate_pp_by_acc
+from pippy.beatmap import Beatmap
+from pippy.pp import calculate_pp, Mods, calculate_pp_by_acc
 
 from pippy import diff
 
 parser = argparse.ArgumentParser()
-parser.add_argument('file', help='File or url. If url provided use -l flag', )
+parser.add_argument('file', help='File or url. If url provided use -link flag', )
 parser.add_argument('-link', help='Flag if url provided', action='store_true')
 parser.add_argument('-acc', help='Accuracy percentage', metavar="acc%",
                     default=0, type=float)
@@ -52,7 +52,7 @@ if not combo or combo > btmap.max_combo:
 
 mods = Mods(mod_s)
 btmap.apply_mods(mods)
-aim, speed, stars, btmap = diff.counter.main(btmap)
+aim, speed, stars, btmap = diff.main(btmap)
 if not acc:
     pp = calculate_pp(aim, speed, btmap, misses, c100, c50, mods, combo, score_ver)
 else:
@@ -73,11 +73,11 @@ pippy_output = {
     "num_spinners": btmap.num_spinners,
     "num_objects": btmap.num_objects,
     "stars": round(stars, 2),
-    "acc": "{}".format(round(pp.acc_percent, 2)),
+    "acc": round(pp.acc_percent, 2),
     "combo": combo,
     "max_combo": btmap.max_combo,
     "misses": misses,
-    "pp": pp.pp
+    "pp": float("{:.2f}".format(pp.pp))
 }
 
 print(pippy_output)
