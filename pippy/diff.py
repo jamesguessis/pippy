@@ -1,6 +1,6 @@
 import math
 
-from pippy.parser.beatmap import Beatmap, HitObject
+from pippy.beatmap import Beatmap, HitObject
 
 decay_base = [0.3, 0.15]
 
