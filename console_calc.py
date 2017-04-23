@@ -58,6 +58,16 @@ if not acc:
 else:
     pp = calculate_pp_by_acc(aim, speed, btmap, acc, mods, combo, misses, score_ver)
 
+
+# This lets me calculate the map completion percentage because I want it to
+hitobj = []
+numobj = 2100
+num = len(btmap.hit_objects)
+for objects in btmap.hit_objects:
+    hitobj.append(objects.time)
+timing = int(hitobj[num - 1]) - int(hitobj[0])
+point = int(hitobj[numobj - 1]) - int(hitobj[0])
+
 pippy_output = {
     "map": btmap.title,
     "artist": btmap.artist,
@@ -77,7 +87,9 @@ pippy_output = {
     "combo": combo,
     "max_combo": btmap.max_combo,
     "misses": misses,
-    "pp": float("{:.2f}".format(pp.pp))
+    "pp": float("{:.2f}".format(pp.pp)),
+    "map_completion": float("{:.2f}".format(point/timing))
 }
+
 
 print(pippy_output)
